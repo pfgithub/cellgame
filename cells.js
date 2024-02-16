@@ -1,6 +1,6 @@
-const WIDTH = 10;
-const HEIGHT = 10;
-const SCALE_FACTOR = 40;
+const WIDTH = 100;
+const HEIGHT = 100;
+const SCALE_FACTOR = 4;
 
 const canvas = document.createElement("canvas");
 canvas.width = WIDTH;
