@@ -1,5 +1,53 @@
-function apply_rules(surrounding_25) {
-    surrounding_25;
+const OUT_OF_BOUNDS = 0;
+const AIR = 140;
+const WATER = 21;
+
+const tile_spec = {
+    [OUT_OF_BOUNDS]: {
+        name: "out_of_bounds",
+        energy: 0,
+        color: [0, 0],
+    },
+    [AIR]: {
+        name: "air",
+        energy: 10,
+        color: [234, 255],
+    },
+    [WATER]: {
+        name: "water",
+        energy: 100,
+        color: [66, 191],
+    },
+};
+
+function chance(tile) {
+    return 50;
+}
+/*
+problem:
+- context window too small
+- see:
+- [ water ] air [ water ]
+- water_left wants to move right. water_right wants to move left
+- they don't realise that if they both do it, they'll merge.
+and another problem:
+*/
+function apply_rules(chance, ul, left, bl, up, tile, down, ur, right, br) {
+    if(tile === AIR && up === WATER) return WATER;
+    if(tile === WATER && down === AIR) return AIR;
+    if(tile === AIR && bl !== AIR && left === WATER && up !== WATER && chance(-1, 0) > 60) {
+        return WATER;
+    }
+    if(tile === WATER && right === AIR && ur !== WATER && chance(0, 0) > 60) {
+        return AIR;
+    }
+    if(tile === AIR && br !== AIR && right === WATER && up !== WATER && chance(1, 0) < 30) {
+        return WATER;
+    }
+    if(tile === WATER && left === AIR && ul !== WATER && chance(0, 0) < 30) {
+        return AIR;
+    }
+    return tile;
 }
 
 /*
@@ -23,7 +71,10 @@ each pixel looks at itself and its eight surrounding pixels to make a decison.
   - with 3x3 rules, make a 3x3 area with the borders out_of_bounds and test every combo
     - since the middle tile doesn't know the wall exists it should prove.
     - might not be possible to test every combo
+      - depends how many tiles we have.
+        with two tiles, it's (1 bit per tile) * (9 tiles) = 9 bits = 512 combos = doable
 
+- ideally we run this whole thing on the gpu so we can do some big region like 2048x2048
 
 
 
