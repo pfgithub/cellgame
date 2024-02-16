@@ -35,16 +35,16 @@ and another problem:
 function apply_rules(chance, ul, left, bl, up, tile, down, ur, right, br) {
     if(tile === AIR && up === WATER) return WATER;
     if(tile === WATER && down === AIR) return AIR;
-    if(tile === AIR && bl !== AIR && left === WATER && up !== WATER && chance(-1, 0) > 60) {
+    if(tile === AIR && bl !== AIR && left === WATER && up !== WATER && chance(-1, 0) >= 50) {
         return WATER;
     }
-    if(tile === WATER && right === AIR && ur !== WATER && chance(0, 0) > 60) {
+    if(tile === WATER && right === AIR && ur !== WATER && chance(0, 0) >= 50) {
         return AIR;
     }
-    if(tile === AIR && br !== AIR && right === WATER && up !== WATER && chance(1, 0) < 30) {
+    if(tile === AIR && br !== AIR && right === WATER && up !== WATER && chance(1, 0) <= 50) {
         return WATER;
     }
-    if(tile === WATER && left === AIR && ul !== WATER && chance(0, 0) < 30) {
+    if(tile === WATER && left === AIR && ul !== WATER && chance(0, 0) <= 50) {
         return AIR;
     }
     return tile;

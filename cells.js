@@ -59,10 +59,10 @@ function tick() {
     let frame_seed = cyrb53("", tick_count);
     for(let y = 0; y < HEIGHT; y++) {
         for(let x = 0; x < WIDTH; x++) {
-            // let chance = (xo, yo) => {
-            //     return cyrb53("" + (x + xo) + "," + (y + yo), tick_count) % 100;
-            // };
-            let chance = () => frame_seed % 100;
+            let chance = (xo, yo) => {
+                return cyrb53("" + (x + xo) + "," + (y + yo), tick_count) % 100;
+            };
+            // let chance = () => frame_seed % 100;
             const ul = tvalue(x - 1, y - 1);
             const left = tvalue(x - 1, y);
             const bl = tvalue(x - 1, y + 1);
