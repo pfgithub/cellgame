@@ -62,18 +62,8 @@ function tick() {
             let chance = (xo, yo) => {
                 return cyrb53("" + (x + xo) + "," + (y + yo), tick_count) % 100;
             };
-            // let chance = () => frame_seed % 100;
-            const ul = tvalue(x - 1, y - 1);
-            const left = tvalue(x - 1, y);
-            const bl = tvalue(x - 1, y + 1);
-            const up = tvalue(x, y - 1);
-            const tile = tvalue(x, y);
-            const down = tvalue(x, y + 1);
-            const ur = tvalue(x + 1, y - 1);
-            const right = tvalue(x + 1, y);
-            const br = tvalue(x + 1, y + 1);
 
-            const nvalue = apply_rules(chance, ul, left, bl, up, tile, down, ur, right, br);
+            const nvalue = apply_rules(chance, tvalue, x, y);
             tiles[tindex(x, y) + 1] = nvalue;
         }
     }

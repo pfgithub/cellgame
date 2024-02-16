@@ -32,21 +32,43 @@ problem:
 - they don't realise that if they both do it, they'll merge.
 and another problem:
 */
-function apply_rules(chance, ul, left, bl, up, tile, down, ur, right, br) {
-    if(tile === AIR && up === WATER) return WATER;
+const no_move = 0;
+const move_down = 1;
+const move_right = 2;
+const move_up = 3;
+const move_left = 4;
+function swap_target(gt, chance, x, y) {
+    const tile = gt(x, y);
+    const down = gt(x, y + 1);
+    const right = gt(x + 1, y);
+    const up = gt(x, y - 1);
+    const left = gt(x - 1, y);
+    if(tile === WATER) {
+        if(down === AIR) return move_down;
+        if(left === AIR && right !== AIR) return move_left;
+        if(right === AIR && left !== AIR) return move_right;
+        if(left === AIR && right === AIR) return gt(x, y) < 50 ? move_left : move_right;
+    }
+    return no_move;
+}
+function apply_rules(chance, gt, x, y) {
+    // i think a better way to define this is pattern matching regions
+    // so match:
+    //     water  __\    air
+    //       air        /  water  (precedence 10)
+    // and
+    //    air water -> water air (precedence 5)
+    // and
+    //    water air -> air water (precedence 5)
+    // and if multiple patterns match with the same precedence, pick one at random
+    // cellular automata aren't very good for this are they
+
+    const up = gt(x, y - 1);
+    const tile = gt(x, y);
+    const down = gt(x, y + 1);
     if(tile === WATER && down === AIR) return AIR;
-    if(tile === AIR && bl !== AIR && left === WATER && up !== WATER && chance(-1, 0) >= 50) {
-        return WATER;
-    }
-    if(tile === WATER && right === AIR && ur !== WATER && chance(0, 0) >= 50) {
-        return AIR;
-    }
-    if(tile === AIR && br !== AIR && right === WATER && up !== WATER && chance(1, 0) <= 50) {
-        return WATER;
-    }
-    if(tile === WATER && left === AIR && ul !== WATER && chance(0, 0) <= 50) {
-        return AIR;
-    }
+    if(tile === AIR && up === WATER) return WATER;
+
     return tile;
 }
 
