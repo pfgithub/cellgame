@@ -1,3 +1,7 @@
+function apply_rules(surrounding_25) {
+    surrounding_25;
+}
+
 /*
 each pixel looks at itself and its eight surrounding pixels to make a decison.
 - if we want matter cannot be created or destroyed do we need to look at a 5x5 grid? instead of 3x3?
@@ -5,6 +9,17 @@ each pixel looks at itself and its eight surrounding pixels to make a decison.
   stays equal ignoring entries/exits from the system
   - this would mean that water in a pipe essentially costs one coal
     - and then when it is emitted from the pipe, where does that extra energy go?
+    - kinetic energy doesn't exist in the world
+    - we could store a heat value for every pixel and then the pump can only pump when
+      its heat is < 254. and heat spreading causes heat to equalize around.
+    - so the generator takes coal with energy 100 and creates a power bolt with energy 50
+      and releases one heat, energy 50
+    - the pump takes one power bolt, energy 50, and releases one heat, energy 50
+
+- adding heat would start to move some stuff out of the simulation, we could move more
+  stuff out too.
+
+
 
 
 generator:
