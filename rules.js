@@ -19,6 +19,11 @@ each pixel looks at itself and its eight surrounding pixels to make a decison.
 - adding heat would start to move some stuff out of the simulation, we could move more
   stuff out too.
 
+- testing rules to make sure they don't violate conservation should be doable
+  - with 3x3 rules, make a 3x3 area with the borders out_of_bounds and test every combo
+    - since the middle tile doesn't know the wall exists it should prove.
+    - might not be possible to test every combo
+
 
 
 
