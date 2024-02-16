@@ -1,6 +1,7 @@
 const OUT_OF_BOUNDS = 0;
 const AIR = 140;
 const WATER = 21;
+const any = 1;
 
 const tile_spec = {
     [OUT_OF_BOUNDS]: {
@@ -51,6 +52,25 @@ function swap_target(gt, chance, x, y) {
     }
     return no_move;
 }
+
+// precedence, before, after
+// center up right down left
+// ooh this makes it easy to ensure matching energy - check if energy(before) == energy(after) for all.
+const rules = [
+    [ 10, [ WATER, any, any, AIR, any ], [ AIR, any, any, WATER, any ] ], // water falls
+    [ 5, [ WATER, any, AIR, any, any ], [ AIR, any, WATER, any, any ] ], // water moves right
+    [ 5, [ WATER, any, any, any, AIR ], [ AIR, any, any, any, WATER ] ], // water moves left
+];
+
+// so here's the question:
+// - how do we apply the rules in a shader
+// basically, at the tiles:
+// - self, up, right, down, left
+// find which rules are matched
+// ooh problem no this doesn't work
+// we know which patterns match self and which may interrupt in left / right
+// but left could have a pattern that matches to it and its left
+
 function apply_rules(chance, gt, x, y) {
     // i think a better way to define this is pattern matching regions
     // so match:
@@ -61,6 +81,8 @@ function apply_rules(chance, gt, x, y) {
     // and
     //    water air -> air water (precedence 5)
     // and if multiple patterns match with the same precedence, pick one at random
+    // - how to do the random? which tile do we center it on?
+    // - what if there are big regions of overlap?
     // cellular automata aren't very good for this are they
 
     const up = gt(x, y - 1);
