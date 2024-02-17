@@ -154,8 +154,12 @@ document.body.appendChild(mkdiv([
 ]));
 document.body.appendChild(mkdiv([
     mknod("element"),
-    mkbtn("air", () => line_element = AIR),
-    mkbtn("water", () => line_element = WATER),
+    ...[AIR, WATER,
+        DATA_WIRE_OFF, DATA_WIRE_ON,
+        DATA_WIRE_SET_OFF, DATA_WIRE_SET_ON,
+    ].map(item => {
+        return mkbtn(tile_spec[item].name, () => line_element = item);
+    }),
 ]));
 
 function setcanvas(ev) {
@@ -183,7 +187,7 @@ canvas.onmousedown = ev => {
         document.removeEventListener("mousemove", mmeh, {capture: true});
 
         setcanvas(ev);
-    }, {capture: true});
+    }, {capture: true, once: true});
     setcanvas(ev);
 };
 

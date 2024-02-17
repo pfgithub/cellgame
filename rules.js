@@ -1,7 +1,24 @@
 const OUT_OF_BOUNDS = 0;
 const AIR = 140;
 const WATER = 21;
+const WIRE = 84; // wire wire electrobolt_back electrobolt_front wire
+const ELECTROBOLT = 2; // energy of an electricity packet
+const WIRE_JUST_BOLTED = 3; // same energy as a wire
+const DATA_WIRE_OFF = 212;
+const DATA_WIRE_ON = 12;
+const DATA_WIRE_SET_OFF = 250;
+const DATA_WIRE_SET_ON = 5;
 const any = 1;
+
+// signal bolts vs electro bolts
+// - electro bolts store packets of energy
+// - signal bolts store 
+
+/*
+automation wire:
+- auto_wire_set_off
+- auto_wire_set_on
+*/
 
 const tile_spec = {
     [OUT_OF_BOUNDS]: {
@@ -16,42 +33,40 @@ const tile_spec = {
     },
     [WATER]: {
         name: "water",
-        energy: 100,
+        energy: 60,
         color: [66, 191],
     },
+    [WIRE]: {
+        name: "wire",
+        energy: 90,
+        color: [84, 84],
+    },
+    [DATA_WIRE_OFF]: {
+        name: "data_wire_off",
+        energy: 40,
+        color: [47, 47],
+    },
+    [DATA_WIRE_ON]: {
+        name: "data_wire_on",
+        energy: 40,
+        color: [171, 33],
+    },
+    [DATA_WIRE_SET_ON]: {
+        name: "data_wire_set_on",
+        energy: 40,
+        color: [240, 36],
+    },
+    [DATA_WIRE_SET_OFF]: {
+        name: "data_wire_set_off",
+        energy: 40,
+        color: [5, 5],
+    },
+    [DATA_WIRE_SET_ON]: {
+        name: "data_wire_set_on",
+        energy: 40,
+        color: [240, 36],
+    },
 };
-
-function chance(tile) {
-    return 50;
-}
-/*
-problem:
-- context window too small
-- see:
-- [ water ] air [ water ]
-- water_left wants to move right. water_right wants to move left
-- they don't realise that if they both do it, they'll merge.
-and another problem:
-*/
-const no_move = 0;
-const move_down = 1;
-const move_right = 2;
-const move_up = 3;
-const move_left = 4;
-function swap_target(gt, chance, x, y) {
-    const tile = gt(x, y);
-    const down = gt(x, y + 1);
-    const right = gt(x + 1, y);
-    const up = gt(x, y - 1);
-    const left = gt(x - 1, y);
-    if (tile === WATER) {
-        if (down === AIR) return move_down;
-        if (left === AIR && right !== AIR) return move_left;
-        if (right === AIR && left !== AIR) return move_right;
-        if (left === AIR && right === AIR) return gt(x, y) < 50 ? move_left : move_right;
-    }
-    return no_move;
-}
 
 const WATER__fall_down = Symbol("water_fall_down");
 const WATER__move_left = Symbol("water_move_left");
@@ -132,6 +147,32 @@ function getchange(chance, gt, x, y) {
 }
 
 function apply_rules(chance, gt, x, y) {
+    const ut = gt(x, y - 1);
+    const lt = gt(x - 1, y);
+    const ct = gt(x, y);
+    const rt = gt(x + 1, y);
+    const dt = gt(x, y + 1);
+
+    if(ct === DATA_WIRE_OFF || ct === DATA_WIRE_ON) {
+        const has_on = lt === DATA_WIRE_SET_ON || rt === DATA_WIRE_SET_ON || ut === DATA_WIRE_SET_ON || dt === DATA_WIRE_SET_ON;
+        const has_off = lt === DATA_WIRE_SET_OFF || rt === DATA_WIRE_SET_OFF || ut === DATA_WIRE_SET_OFF || dt === DATA_WIRE_SET_OFF;
+        const soff = ct === DATA_WIRE_OFF ? DATA_WIRE_OFF : DATA_WIRE_SET_OFF;
+        const son = ct === DATA_WIRE_ON ? DATA_WIRE_ON : DATA_WIRE_SET_ON;
+        if(has_off && has_on) {
+            return chance(x, y) < 50 ? soff : son;
+        }else if(has_off) {
+            return soff;
+        }else if(has_on) {
+            return son
+        }else{
+            return ct;
+        }
+    }else if(ct === DATA_WIRE_SET_OFF) {
+        return DATA_WIRE_OFF;
+    }else if(ct === DATA_WIRE_SET_ON) {
+        return DATA_WIRE_ON;
+    }
+
     const tdir = stage1(chance, gt, x, y);
     if(tdir === WATER__fall_down) {
         return getchange(chance, gt, x, y + 1)[0];
