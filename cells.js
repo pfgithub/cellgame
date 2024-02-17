@@ -185,8 +185,6 @@ canvas.onmousedown = ev => {
     document.addEventListener("mousemove", mmeh, {capture: true});
     document.addEventListener("mouseup", ev => {
         document.removeEventListener("mousemove", mmeh, {capture: true});
-
-        setcanvas(ev);
     }, {capture: true, once: true});
     setcanvas(ev);
 };
