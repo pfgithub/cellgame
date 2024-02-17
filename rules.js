@@ -6,7 +6,6 @@ const ELECTROBOLT = 252; // energy of an electricity packet
 const WIRE_JUST_BOLTED = 128; // same energy as a wire
 const DATA_WIRE_OFF = 212;
 const DATA_WIRE_ON = 12;
-const DATA_WIRE_SET_OFF = 250; // we can skip this one and only require on propagation. solves invalid state wires like red green red red
 const DATA_WIRE_SET_ON = 5;
 const any = 1;
 
@@ -65,11 +64,6 @@ const tile_spec = {
         name: "data_wire_set_on",
         energy: 40,
         color: [240, 36],
-    },
-    [DATA_WIRE_SET_OFF]: {
-        name: "data_wire_set_off",
-        energy: 40,
-        color: [5, 5],
     },
     [DATA_WIRE_SET_ON]: {
         name: "data_wire_set_on",
@@ -186,20 +180,16 @@ function apply_rules(chance, gt, x, y) {
 
     if(ct === DATA_WIRE_OFF || ct === DATA_WIRE_ON) {
         const has_on = lt === DATA_WIRE_SET_ON || rt === DATA_WIRE_SET_ON || ut === DATA_WIRE_SET_ON || dt === DATA_WIRE_SET_ON;
-        const has_off = lt === DATA_WIRE_SET_OFF || rt === DATA_WIRE_SET_OFF || ut === DATA_WIRE_SET_OFF || dt === DATA_WIRE_SET_OFF;
-        const soff = ct === DATA_WIRE_OFF ? DATA_WIRE_OFF : DATA_WIRE_SET_OFF;
+        const has_off = lt === DATA_WIRE_OFF || rt === DATA_WIRE_OFF || ut === DATA_WIRE_OFF || dt === DATA_WIRE_OFF;
+        const soff = DATA_WIRE_OFF;
         const son = ct === DATA_WIRE_ON ? DATA_WIRE_ON : DATA_WIRE_SET_ON;
-        if(has_off && has_on) {
-            return chance(x, y) < 50 ? soff : son;
+        if(has_on) {
+            return son;
         }else if(has_off) {
             return soff;
-        }else if(has_on) {
-            return son
         }else{
             return ct;
         }
-    }else if(ct === DATA_WIRE_SET_OFF) {
-        return DATA_WIRE_OFF;
     }else if(ct === DATA_WIRE_SET_ON) {
         return DATA_WIRE_ON;
     }
