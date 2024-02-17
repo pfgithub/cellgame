@@ -97,6 +97,24 @@ function render() {
 
 let play_interval = null;
 
+function mkdiv(children) {
+    const res = document.createElement("div");
+    for(const child of children) res.appendChild(child);
+    return res;
+}
+function mkbtn(label, callback) {
+    const res = document.createElement("button");
+    res.onclick = callback;
+    res.textContent = label;
+    return res;
+}
+function mknod(val) {
+    return document.createTextNode(val);
+}
+
+let line_size = 0;
+let line_element = WATER;
+
 const tval = document.createElement("div");
 document.body.appendChild(tval);
 const btn_container = document.createElement("div");
@@ -126,12 +144,25 @@ btn_container.appendChild(play_btn);
 document.body.appendChild(btn_container);
 const speedval = document.createElement("div");
 document.body.appendChild(speedval);
+document.body.appendChild(mkdiv([
+    mknod("line size"),
+    mkbtn("1", () => line_size = 0),
+    mkbtn("3", () => line_size = 1),
+    mkbtn("5", () => line_size = 2),
+    mkbtn("7", () => line_size = 3),
+    mkbtn("9", () => line_size = 4),
+]));
+document.body.appendChild(mkdiv([
+    mknod("element"),
+    mkbtn("air", () => line_element = AIR),
+    mkbtn("water", () => line_element = WATER),
+]));
 
 function setcanvas(ev) {
     const [x, y] = [ev.offsetX / SCALE_FACTOR |0, ev.offsetY / SCALE_FACTOR |0];
-    for(let xo = -3; xo <= 3; xo++) {
-        for(let yo = -3; yo <= 3; yo++) {
-            tset(x + xo, y + yo, WATER);
+    for(let xo = -line_size; xo <= line_size; xo++) {
+        for(let yo = -line_size; yo <= line_size; yo++) {
+            tset(x + xo, y + yo, line_element);
         }
     }
     render();
