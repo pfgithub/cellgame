@@ -104,33 +104,33 @@ function getchange(chance, gt, x, y) {
     if(up === WATER__fall_down) {
         return [
             ct,
-            lt, WATER, rt,
+            lt, ut, rt,
             dt,
         ];
     }else if(left === WATER__move_right && right === WATER__move_left) {
         if(chance(x, y) < 50) {
             return [
                 ut,
-                ct, WATER, rt,
+                ct, lt, rt,
                 dt,
             ];
         }else{
             return [
                 ut,
-                lt, WATER, ct,
+                lt, rt, ct,
                 dt,
             ];
         }
     }else if(left === WATER__move_right) {
         return [
             ut,
-            ct, WATER, rt,
+            ct, lt, rt,
             dt,
         ];
     }else if(right === WATER__move_left) {
         return [
             ut,
-            lt, WATER, ct,
+            lt, rt, ct,
             dt,
         ];
     }else{
