@@ -7,6 +7,8 @@ const WIRE_JUST_BOLTED = 128; // same energy as a wire
 const DATA_WIRE_OFF = 212;
 const DATA_WIRE_ON = 12;
 const DATA_WIRE_SET_ON = 5;
+const DATA_WIRE_NAND_DOWN_OFF = 36;
+const DATA_WIRE_NAND_DOWN_ON = 64;
 const any = 1;
 
 // signal bolts vs electro bolts
@@ -65,10 +67,15 @@ const tile_spec = {
         energy: 40,
         color: [240, 36],
     },
-    [DATA_WIRE_SET_ON]: {
-        name: "data_wire_set_on",
-        energy: 40,
-        color: [240, 36],
+    [DATA_WIRE_NAND_DOWN_OFF]: {
+        name: "data_wire_nand_down_off",
+        energy: 50,
+        color: [36, 36],
+    },
+    [DATA_WIRE_NAND_DOWN_ON]: {
+        name: "data_wire_nand_down_on",
+        energy: 50,
+        color: [54, 54],
     },
 };
 
@@ -179,11 +186,19 @@ function apply_rules(chance, gt, x, y) {
     const dt = gt(x, y + 1);
 
     if(ct === DATA_WIRE_OFF || ct === DATA_WIRE_ON) {
-        const has_on = lt === DATA_WIRE_SET_ON || rt === DATA_WIRE_SET_ON || ut === DATA_WIRE_SET_ON || dt === DATA_WIRE_SET_ON;
-        const has_off = lt === DATA_WIRE_OFF || rt === DATA_WIRE_OFF || ut === DATA_WIRE_OFF || dt === DATA_WIRE_OFF;
+        const has_on = (
+            lt === DATA_WIRE_SET_ON || rt === DATA_WIRE_SET_ON || ut === DATA_WIRE_SET_ON || dt === DATA_WIRE_SET_ON ||
+            ut === DATA_WIRE_NAND_DOWN_ON
+        );
+        const has_off = (
+            lt === DATA_WIRE_OFF || rt === DATA_WIRE_OFF || ut === DATA_WIRE_OFF || dt === DATA_WIRE_OFF ||
+            ut === DATA_WIRE_NAND_DOWN_OFF
+        );
         const soff = DATA_WIRE_OFF;
         const son = ct === DATA_WIRE_ON ? DATA_WIRE_ON : DATA_WIRE_SET_ON;
-        if(has_on) {
+        if(has_on && has_off) {
+            return DATA_WIRE_SET_ON;
+        }else if(has_on) {
             return son;
         }else if(has_off) {
             return soff;
@@ -192,6 +207,12 @@ function apply_rules(chance, gt, x, y) {
         }
     }else if(ct === DATA_WIRE_SET_ON) {
         return DATA_WIRE_ON;
+    }else if(ct === DATA_WIRE_NAND_DOWN_OFF || ct === DATA_WIRE_NAND_DOWN_ON) {
+        const l_off = lt === DATA_WIRE_OFF;
+        const u_off = ut === DATA_WIRE_OFF;
+        const r_off = rt === DATA_WIRE_OFF;
+        return l_off || u_off || r_off ? DATA_WIRE_NAND_DOWN_ON : DATA_WIRE_NAND_DOWN_OFF;
+        return !(l_on && u_on && r_on);
     }
 
     if(ct === WIRE_JUST_BOLTED) {

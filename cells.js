@@ -159,8 +159,9 @@ document.body.appendChild(mkdiv([
 document.body.appendChild(mkdiv([
     mknod("element"),
     ...[AIR, WATER,
-        DATA_WIRE_OFF, DATA_WIRE_ON,
+        DATA_WIRE_OFF,
         DATA_WIRE_SET_ON,
+        DATA_WIRE_NAND_DOWN_OFF,
         WIRE, ELECTROBOLT,
     ].map(item => {
         return mkbtn(tile_spec[item].name, () => line_element = item);
