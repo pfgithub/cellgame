@@ -1,6 +1,6 @@
-const WIDTH = 100;
-const HEIGHT = 100;
-const SCALE_FACTOR = 4;
+const WIDTH = 10;
+const HEIGHT = 10;
+const SCALE_FACTOR = 40;
 
 const canvas = document.createElement("canvas");
 canvas.width = WIDTH;
@@ -163,8 +163,8 @@ function setcanvas(ev) {
     const offset_x = ev.clientX - canvas_pos.x;
     const offset_y = ev.clientY - canvas_pos.y;
     const [x, y] = [
-        Math.round(offset_x / SCALE_FACTOR),
-        Math.round(offset_y / SCALE_FACTOR),
+        Math.floor(offset_x / SCALE_FACTOR),
+        Math.floor(offset_y / SCALE_FACTOR),
     ];
     for(let xo = -line_size; xo <= line_size; xo++) {
         for(let yo = -line_size; yo <= line_size; yo++) {
