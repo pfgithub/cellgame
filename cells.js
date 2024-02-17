@@ -159,7 +159,13 @@ document.body.appendChild(mkdiv([
 ]));
 
 function setcanvas(ev) {
-    const [x, y] = [ev.offsetX / SCALE_FACTOR |0, ev.offsetY / SCALE_FACTOR |0];
+    const canvas_pos = canvas.getBoundingClientRect();
+    const offset_x = ev.clientX - canvas_pos.x;
+    const offset_y = ev.clientY - canvas_pos.y;
+    const [x, y] = [
+        Math.round(offset_x / SCALE_FACTOR),
+        Math.round(offset_y / SCALE_FACTOR),
+    ];
     for(let xo = -line_size; xo <= line_size; xo++) {
         for(let yo = -line_size; yo <= line_size; yo++) {
             tset(x + xo, y + yo, line_element);
@@ -168,17 +174,17 @@ function setcanvas(ev) {
     render();
 }
 
-let mouse_down = false;
 canvas.onmousedown = ev => {
-    mouse_down = true;
+    const mmeh = ev => {
+        setcanvas(ev);
+    };
+    document.addEventListener("mousemove", mmeh, {capture: true});
+    document.addEventListener("mouseup", ev => {
+        document.removeEventListener("mousemove", mmeh, {capture: true});
+
+        setcanvas(ev);
+    }, {capture: true});
     setcanvas(ev);
-};
-canvas.onmouseup = ev => {
-    mouse_down = false;
-    setcanvas(ev);
-};
-canvas.onmousemove = ev => {
-    if(mouse_down) setcanvas(ev);
 };
 
 render();
