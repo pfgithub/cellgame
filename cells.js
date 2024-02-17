@@ -37,6 +37,10 @@ for(let y = 0; y < HEIGHT; y++) {
         tset(x, y, AIR);
     }
 }
+const prev_save = localStorage.getItem("cells-savefile");
+if(prev_save != null) {
+    base64ToUint8a(prev_save, tiles);
+}
 
 const cyrb53 = (str, seed = 0) => {
     let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
@@ -157,10 +161,15 @@ document.body.appendChild(mkdiv([
     ...[AIR, WATER,
         DATA_WIRE_OFF, DATA_WIRE_ON,
         DATA_WIRE_SET_OFF, DATA_WIRE_SET_ON,
+        WIRE, ELECTROBOLT,
     ].map(item => {
         return mkbtn(tile_spec[item].name, () => line_element = item);
     }),
 ]));
+
+setInterval(() => {
+    localStorage.setItem("cells-savefile", uint8aToBase64(tiles));
+}, 1000);
 
 function setcanvas(ev) {
     const canvas_pos = canvas.getBoundingClientRect();
@@ -190,3 +199,17 @@ canvas.onmousedown = ev => {
 };
 
 render();
+function base64ToUint8a(base64, result) {
+    const bstr = atob(base64);
+    for (let i = 0; i < bstr.length; i++) {
+        result[i] = bstr.charCodeAt(i);
+    }
+    console.log(result, bstr);
+}
+function uint8aToBase64(u8a){
+    const res = [];
+    for(let i = 0; i < u8a.length; i++) {
+        res.push(String.fromCharCode(u8a[i]));
+    }
+    return btoa(res.join(""));
+  }

@@ -2,8 +2,8 @@ const OUT_OF_BOUNDS = 0;
 const AIR = 140;
 const WATER = 21;
 const WIRE = 84; // wire wire electrobolt_back electrobolt_front wire
-const ELECTROBOLT = 2; // energy of an electricity packet
-const WIRE_JUST_BOLTED = 3; // same energy as a wire
+const ELECTROBOLT = 252; // energy of an electricity packet
+const WIRE_JUST_BOLTED = 128; // same energy as a wire
 const DATA_WIRE_OFF = 212;
 const DATA_WIRE_ON = 12;
 const DATA_WIRE_SET_OFF = 250;
@@ -40,6 +40,16 @@ const tile_spec = {
         name: "wire",
         energy: 90,
         color: [84, 84],
+    },
+    [WIRE_JUST_BOLTED]: {
+        name: "wire_just_bolted",
+        energy: 90,
+        color: [111, 14],
+    },
+    [ELECTROBOLT]: {
+        name: "electrobolt",
+        energy: 200,
+        color: [215, 3],
     },
     [DATA_WIRE_OFF]: {
         name: "data_wire_off",
