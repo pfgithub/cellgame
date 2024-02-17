@@ -6,7 +6,7 @@ const ELECTROBOLT = 252; // energy of an electricity packet
 const WIRE_JUST_BOLTED = 128; // same energy as a wire
 const DATA_WIRE_OFF = 212;
 const DATA_WIRE_ON = 12;
-const DATA_WIRE_SET_OFF = 250;
+const DATA_WIRE_SET_OFF = 250; // we can skip this one and only require on propagation. solves invalid state wires like red green red red
 const DATA_WIRE_SET_ON = 5;
 const any = 1;
 
@@ -81,6 +81,10 @@ const tile_spec = {
 const WATER__fall_down = Symbol("water_fall_down");
 const WATER__move_left = Symbol("water_move_left");
 const WATER__move_right = Symbol("water_move_right");
+const ELECTROBOLT__move_right = Symbol("electrobolt_move_right");
+const ELECTROBOLT__move_up = Symbol("electrobolt_move_up");
+const ELECTROBOLT__move_down = Symbol("electrobolt_move_down");
+const ELECTROBOLT__move_left = Symbol("electrobolt_move_left");
 const no_change = Symbol("no change");
 function stage1(chance, gt, x, y) {
     const left = gt(x - 1, y);
@@ -94,6 +98,22 @@ function stage1(chance, gt, x, y) {
     } else if (tile === WATER) {
         const cv = chance(x, y);
         return cv < 33 ? left === AIR ? WATER__move_left : no_change : cv < 66 ? right === AIR ? WATER__move_right : no_change : no_change;
+    }
+    if(tile === ELECTROBOLT) {
+        if(up === WIRE_JUST_BOLTED && down === WIRE) return ELECTROBOLT__move_down;
+        if(left === WIRE_JUST_BOLTED && right === WIRE) return ELECTROBOLT__move_right;
+        if(right === WIRE_JUST_BOLTED && left === WIRE) return ELECTROBOLT__move_left;
+        if(down === WIRE_JUST_BOLTED && up === WIRE) return ELECTROBOLT__move_up;
+        const choices = [];
+        if(down === WIRE) choices.push(ELECTROBOLT__move_down);
+        if(right === WIRE) choices.push(ELECTROBOLT__move_right);
+        if(left === WIRE) choices.push(ELECTROBOLT__move_left);
+        if(up === WIRE) choices.push(ELECTROBOLT__move_up);
+        if(choices.length === 0) return no_change;
+        if(choices.length === 1) return choices[0];
+        const cval = (chance(x, y) / 100 / choices.length) |0;
+        return choices[cval];
+        // instead of looping back after hitting a dead end, we should emit as heat
     }
     return no_change;
 }
@@ -110,6 +130,11 @@ function getchange(chance, gt, x, y) {
     const ct = gt(x, y);
     const rt = gt(x + 1, y);
     const dt = gt(x, y + 1);
+
+    if(up === ELECTROBOLT__move_down) return [WIRE_JUST_BOLTED, lt, ut, rt, dt];
+    if(down === ELECTROBOLT__move_up) return [ut, lt, dt, rt, WIRE_JUST_BOLTED];
+    if(right === ELECTROBOLT__move_left) return [ut, lt, rt, WIRE_JUST_BOLTED, dt];
+    if(left === ELECTROBOLT__move_right) return [ut, WIRE_JUST_BOLTED, lt, rt, dt];
 
     if(up === WATER__fall_down) {
         return [
@@ -179,13 +204,19 @@ function apply_rules(chance, gt, x, y) {
         return DATA_WIRE_ON;
     }
 
+    if(ct === WIRE_JUST_BOLTED) {
+        return WIRE;
+    }
+
     const tdir = stage1(chance, gt, x, y);
-    if(tdir === WATER__fall_down) {
+    if(tdir === WATER__fall_down || tdir === ELECTROBOLT__move_down) {
         return getchange(chance, gt, x, y + 1)[0];
-    }else if(tdir === WATER__move_right) {
+    }else if(tdir === WATER__move_right || tdir === ELECTROBOLT__move_right) {
         return getchange(chance, gt, x + 1, y)[1];
-    }else if(tdir === WATER__move_left) {
+    }else if(tdir === WATER__move_left || tdir === ELECTROBOLT__move_left) {
         return getchange(chance, gt, x - 1, y)[3];
+    }else if(tdir === ELECTROBOLT__move_up) {
+        return getchange(chance, gt, x, y - 1)[4];
     }else{
         return getchange(chance, gt, x, y)[2];
     }
