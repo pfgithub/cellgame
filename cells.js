@@ -55,24 +55,29 @@ const cyrb53 = (str, seed = 0) => {
 
 let tick_count = 0;
 function tick() {
+    const tstart = performance.now();
     tick_count += 1;
     let frame_seed = cyrb53("", tick_count);
     for(let y = 0; y < HEIGHT; y++) {
         for(let x = 0; x < WIDTH; x++) {
-            let chance = (xo, yo) => {
-                return cyrb53("" + (x + xo) + "," + (y + yo), tick_count) % 100;
+            let chance = (x, y) => {
+                const cstr = "" + (x) + "," + (y);
+                const res = cyrb53(cstr, tick_count) % 100;
+                return res;
             };
 
             const nvalue = apply_rules(chance, tvalue, x, y);
             tiles[tindex(x, y) + 1] = nvalue;
         }
     }
+    const tend = performance.now();
     for(let y = 0; y < HEIGHT; y++) {
         for(let x = 0; x < WIDTH; x++) {
             const tv = tiles[tindex(x, y) + 1];
             tset(x, y, tv);
         }
     }
+    speedval.textContent = "time: " + (tend - tstart);
 }
 function measure() {
     let total = 0;
@@ -90,6 +95,10 @@ function render() {
     tval.textContent = "total: " + measure();
 }
 
+let play_interval = null;
+
+const tval = document.createElement("div");
+document.body.appendChild(tval);
 const btn_container = document.createElement("div");
 const tick_button = document.createElement("button");
 tick_button.textContent = "tick";
@@ -98,13 +107,33 @@ tick_button.onclick = () => {
     render();
 }
 btn_container.appendChild(tick_button);
-const tval = document.createElement("div");
-document.body.appendChild(tval);
+const play_btn = document.createElement("button");
+play_btn.textContent = "play";
+play_btn.onclick = () => {
+    if(play_interval != null) {
+        play_btn.textContent = "play";
+        clearInterval(play_interval);
+        play_interval = null;
+    }else{
+        play_btn.textContent = "pause";
+        play_interval = setInterval(() => {
+            tick();
+            render();
+        }, 1000 / 60);
+    }
+};
+btn_container.appendChild(play_btn);
 document.body.appendChild(btn_container);
+const speedval = document.createElement("div");
+document.body.appendChild(speedval);
 
 function setcanvas(ev) {
     const [x, y] = [ev.offsetX / SCALE_FACTOR |0, ev.offsetY / SCALE_FACTOR |0];
-    tset(x, y, WATER);
+    for(let xo = -3; xo <= 3; xo++) {
+        for(let yo = -3; yo <= 3; yo++) {
+            tset(x + xo, y + yo, WATER);
+        }
+    }
     render();
 }
 

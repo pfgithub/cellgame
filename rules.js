@@ -44,54 +44,104 @@ function swap_target(gt, chance, x, y) {
     const right = gt(x + 1, y);
     const up = gt(x, y - 1);
     const left = gt(x - 1, y);
-    if(tile === WATER) {
-        if(down === AIR) return move_down;
-        if(left === AIR && right !== AIR) return move_left;
-        if(right === AIR && left !== AIR) return move_right;
-        if(left === AIR && right === AIR) return gt(x, y) < 50 ? move_left : move_right;
+    if (tile === WATER) {
+        if (down === AIR) return move_down;
+        if (left === AIR && right !== AIR) return move_left;
+        if (right === AIR && left !== AIR) return move_right;
+        if (left === AIR && right === AIR) return gt(x, y) < 50 ? move_left : move_right;
     }
     return no_move;
 }
 
-// precedence, before, after
-// center up right down left
-// ooh this makes it easy to ensure matching energy - check if energy(before) == energy(after) for all.
-const rules = [
-    [ 10, [ WATER, any, any, AIR, any ], [ AIR, any, any, WATER, any ] ], // water falls
-    [ 5, [ WATER, any, AIR, any, any ], [ AIR, any, WATER, any, any ] ], // water moves right
-    [ 5, [ WATER, any, any, any, AIR ], [ AIR, any, any, any, WATER ] ], // water moves left
-];
+const WATER__fall_down = Symbol("water_fall_down");
+const WATER__move_left = Symbol("water_move_left");
+const WATER__move_right = Symbol("water_move_right");
+const no_change = Symbol("no change");
+function stage1(chance, gt, x, y) {
+    const left = gt(x - 1, y);
+    const right = gt(x + 1, y);
+    const up = gt(x, y - 1);
+    const down = gt(x, y + 1);
+    const tile = gt(x, y);
 
-// so here's the question:
-// - how do we apply the rules in a shader
-// basically, at the tiles:
-// - self, up, right, down, left
-// find which rules are matched
-// ooh problem no this doesn't work
-// we know which patterns match self and which may interrupt in left / right
-// but left could have a pattern that matches to it and its left
+    if (tile === WATER && down === AIR) {
+        return WATER__fall_down;
+    } else if (tile === WATER && left === AIR && right === AIR) {
+        const cv = chance(x, y);
+        return cv < 33 ? WATER__move_left : cv < 66 ? WATER__move_right : no_change;
+    } else if (tile === WATER && left === AIR) {
+        return WATER__move_left;
+    } else if (tile === WATER && right === AIR) {
+        return WATER__move_right;
+    }
+    return no_change;
+}
+
+function getchange(chance, gt, x, y) {
+    const center = stage1(chance, gt, x, y);
+    const up = stage1(chance, gt, x, y - 1);
+    const left = stage1(chance, gt, x - 1, y);
+    const right = stage1(chance, gt, x + 1, y);
+    const down = stage1(chance, gt, x, y + 1);
+
+    const ut = gt(x, y - 1);
+    const lt = gt(x - 1, y);
+    const ct = gt(x, y);
+    const rt = gt(x + 1, y);
+    const dt = gt(x, y + 1);
+
+    if(up === WATER__fall_down) {
+        return [
+            ct,
+            lt, WATER, rt,
+            dt,
+        ];
+    }else if(left === WATER__move_right && right === WATER__move_left) {
+        if(chance(x, y) < 50) {
+            return [
+                ut,
+                ct, WATER, rt,
+                dt,
+            ];
+        }else{
+            return [
+                ut,
+                lt, WATER, ct,
+                dt,
+            ];
+        }
+    }else if(left === WATER__move_right) {
+        return [
+            ut,
+            ct, WATER, rt,
+            dt,
+        ];
+    }else if(right === WATER__move_left) {
+        return [
+            ut,
+            lt, WATER, ct,
+            dt,
+        ];
+    }else{
+        return [
+            ut,
+            lt, ct, rt,
+            dt,
+        ];
+    }
+}
 
 function apply_rules(chance, gt, x, y) {
-    // i think a better way to define this is pattern matching regions
-    // so match:
-    //     water  __\    air
-    //       air        /  water  (precedence 10)
-    // and
-    //    air water -> water air (precedence 5)
-    // and
-    //    water air -> air water (precedence 5)
-    // and if multiple patterns match with the same precedence, pick one at random
-    // - how to do the random? which tile do we center it on?
-    // - what if there are big regions of overlap?
-    // cellular automata aren't very good for this are they
-
-    const up = gt(x, y - 1);
-    const tile = gt(x, y);
-    const down = gt(x, y + 1);
-    if(tile === WATER && down === AIR) return AIR;
-    if(tile === AIR && up === WATER) return WATER;
-
-    return tile;
+    const tdir = stage1(chance, gt, x, y);
+    if(tdir === WATER__fall_down) {
+        return getchange(chance, gt, x, y + 1)[0];
+    }else if(tdir === WATER__move_right) {
+        return getchange(chance, gt, x + 1, y)[1];
+    }else if(tdir === WATER__move_left) {
+        return getchange(chance, gt, x - 1, y)[3];
+    }else{
+        return getchange(chance, gt, x, y)[2];
+    }
 }
 
 /*
