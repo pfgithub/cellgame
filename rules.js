@@ -11,6 +11,8 @@ const DATA_WIRE_NAND_DOWN_OFF = 36;
 const DATA_WIRE_NAND_DOWN_ON = 64;
 const any = 1;
 
+// nany gate SET_ON|ON|OFF
+
 // signal bolts vs electro bolts
 // - electro bolts store packets of energy
 // - signal bolts store 
