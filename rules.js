@@ -81,13 +81,9 @@ function stage1(chance, gt, x, y) {
 
     if (tile === WATER && down === AIR) {
         return WATER__fall_down;
-    } else if (tile === WATER && left === AIR && right === AIR) {
+    } else if (tile === WATER) {
         const cv = chance(x, y);
-        return cv < 33 ? WATER__move_left : cv < 66 ? WATER__move_right : no_change;
-    } else if (tile === WATER && left === AIR) {
-        return WATER__move_left;
-    } else if (tile === WATER && right === AIR) {
-        return WATER__move_right;
+        return cv < 33 ? left === AIR ? WATER__move_left : no_change : cv < 66 ? right === AIR ? WATER__move_right : no_change : no_change;
     }
     return no_change;
 }
